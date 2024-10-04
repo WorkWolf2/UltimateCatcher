@@ -24,7 +24,9 @@ import com.craftaro.core.gui.GuiManager;
 import com.craftaro.core.hooks.EconomyManager;
 import com.craftaro.core.hooks.EntityStackerManager;
 import com.craftaro.core.utils.TextUtils;
+import jdk.jfr.internal.LogLevel;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.EntityType;
@@ -38,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 public class UltimateCatcher extends SongodaPlugin {
 
@@ -86,6 +89,8 @@ public class UltimateCatcher extends SongodaPlugin {
 
         // Load entity stack manager.
         EntityStackerManager.load();
+
+        getLogger().log(Level.INFO, "Forked By WorkWolf_2 :)");
 
         // Load hook manager
         externalHookManager = new ExternalHookManager(this);

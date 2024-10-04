@@ -1,6 +1,7 @@
 package com.craftaro.ultimatecatcher.tasks;
 
 import com.craftaro.core.compatibility.CompatibleParticleHandler;
+import com.craftaro.core.third_party.de.tr7zw.nbtapi.NBT;
 import com.craftaro.third_party.com.cryptomorin.xseries.XMaterial;
 import com.craftaro.core.third_party.de.tr7zw.nbtapi.NBTItem;
 import com.craftaro.third_party.com.cryptomorin.xseries.XSound;
@@ -73,9 +74,9 @@ public class EggTrackingTask extends BukkitRunnable {
                     item.getItemStack().removeEnchantment(Enchantment.ARROW_KNOCKBACK);
                     item.setPickupDelay(1);
 
-                    NBTItem newItem = new NBTItem(item.getItemStack());
-                    newItem.removeKey("UCI");
-                    item.setItemStack(newItem.getItem());
+                    NBT.modify(item, nbt -> {
+                        nbt.removeKey("UCI");
+                    });
                     continue;
                 }
 

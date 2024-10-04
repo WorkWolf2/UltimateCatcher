@@ -1,5 +1,8 @@
 package com.craftaro.ultimatecatcher.egg;
 
+import com.craftaro.core.third_party.de.tr7zw.nbtapi.NBT;
+import com.craftaro.core.third_party.de.tr7zw.nbtapi.iface.ReadableItemNBT;
+import com.craftaro.core.third_party.de.tr7zw.nbtapi.iface.ReadableNBT;
 import com.craftaro.third_party.com.cryptomorin.xseries.XMaterial;
 import com.craftaro.ultimatecatcher.settings.Settings;
 import com.craftaro.core.compatibility.CompatibleMaterial;
@@ -48,12 +51,12 @@ public class CEgg {
 
         item.setItemMeta(meta);
 
-        NBTItem nbtItem = new NBTItem(item);
+        NBT.modify(item, nbt ->{
+            nbt.setBoolean("UCI", true);
+            nbt.setString("type", key);
+        });
 
-        nbtItem.setBoolean("UCI", true);
-        nbtItem.setString("type", key);
-
-        return nbtItem.getItem();
+        return item;
     }
 
     public String getKey() {

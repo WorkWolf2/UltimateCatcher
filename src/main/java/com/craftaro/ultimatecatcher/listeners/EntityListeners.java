@@ -33,7 +33,7 @@ public class EntityListeners implements Listener {
         this.eggHandler = eggHandler;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler()
     public void onEntitySmack(PlayerInteractEntityEvent event) {
         ItemStack item = event.getPlayer().getItemInHand();
         if (item.getType() == Material.AIR) return;
@@ -44,8 +44,9 @@ public class EntityListeners implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void InventorySnotch(InventoryPickupItemEvent event) {
-        if (eggHandler.isEgg(event.getItem()))
+        if (eggHandler.isEgg(event.getItem())) {
             event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -86,12 +87,14 @@ public class EntityListeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true)
     public void onSmack(ProjectileHitEvent event) {
         if (event.getEntity().getType() != EntityType.EGG) return;
 
         Egg egg = (Egg) event.getEntity();
         if (egg.getCustomName() == null || !egg.getCustomName().startsWith("UCI") || egg.isOnGround()) return;
+
+        event.setCancelled(true);
 
         eggHandler.handleEggHit(egg, event);
     }

@@ -7,6 +7,7 @@ import com.craftaro.core.compatibility.ServerVersion;
 import com.craftaro.core.hooks.EconomyManager;
 import com.craftaro.core.hooks.EntityStackerManager;
 import com.craftaro.core.locale.Message;
+import com.craftaro.core.third_party.de.tr7zw.nbtapi.NBT;
 import com.craftaro.core.third_party.de.tr7zw.nbtapi.NBTItem;
 import com.craftaro.core.utils.ItemUtils;
 import com.craftaro.core.utils.TextUtils;
@@ -21,6 +22,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
+import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 
 import com.craftaro.core.compatibility.*;
@@ -80,6 +82,7 @@ public class EggHandler {
 
     private boolean isUltimateCatcherEgg(ItemStack item) {
         ItemMeta meta = item.getItemMeta();
+
         return item.getType() != Material.AIR
                 && (!meta.hasDisplayName()
                 || (!meta.getDisplayName().startsWith(UCI_KEY + ";")
@@ -120,9 +123,11 @@ public class EggHandler {
 
         Location location = player.getEyeLocation().clone();
 
-        NBTItem nbtItem = new NBTItem(item);
-        nbtItem.setBoolean(UCI_KEY, true);
-        ItemStack toThrow = enchantEgg(nbtItem.getItem());
+        NBT.modify(item, nbt -> {
+            nbt.setBoolean(UCI_KEY, true);
+        });
+
+        ItemStack toThrow = enchantEgg(item);
 
         Item egg = dropEggItem(location, toThrow);
 
@@ -213,15 +218,15 @@ public class EggHandler {
     }
 
     private void removeTemporaryChicken(Egg egg) {
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-                        egg.getNearbyEntities(3, 3, 3).stream()
-                                .filter(e -> e instanceof LivingEntity
-                                        && e.getTicksLived() <= 20
-                                        && e.getType() != EntityType.PLAYER
-                                        && e.getType() == EntityType.CHICKEN)
-                                .findFirst()
-                                .ifPresent(Entity::remove),
-                0L
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                egg.getNearbyEntities(3, 3, 3).stream()
+                        .filter(e -> e instanceof LivingEntity
+                                && e.getTicksLived() <= 20
+                                && e.getType() != EntityType.PLAYER
+                                && e.getType() == EntityType.CHICKEN)
+                        .findFirst()
+                        .ifPresent(Entity::remove);
+                }
         );
     }
 
@@ -372,7 +377,7 @@ public class EggHandler {
     private void catchEntity(Egg egg, Player player, LivingEntity entity, CEgg catcher) {
         PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, null, entity.getLocation().getBlock(), BlockFace.UP);
         Bukkit.getPluginManager().callEvent(interactEvent);
-        if (interactEvent.isCancelled()) {
+        if (interactEvent.useItemInHand().equals(Event.Result.DENY)) {
             rejectEgg(egg, catcher, true);
             return;
         }
@@ -513,8 +518,20 @@ public class EggHandler {
         if (playSound)
             XSound.ENTITY_VILLAGER_NO.play(egg.getLocation(), 1L, 1L);
 
+        Bukkit.getScheduler().runTask(plugin, egg::remove);
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    egg.getNearbyEntities(3, 3, 3).stream()
+                            .filter(e -> e instanceof LivingEntity
+                                    && e.getTicksLived() <= 20
+                                    && e.getType() != EntityType.PLAYER
+                                    && e.getType() == EntityType.CHICKEN)
+                            .findFirst()
+                            .ifPresent(Entity::remove);
+                }
+        );
+
         egg.getWorld().dropItem(egg.getLocation(), catcher.toItemStack());
-        egg.remove();
     }
 
     public Map<UUID, UUID> getEggs() {
